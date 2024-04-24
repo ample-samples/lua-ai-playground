@@ -32,21 +32,3 @@ local function calculateLayoutOutput(layerInputs, layerWeights, layerBiases)
 end
 
 print(calculateLayoutOutput(inputs, weights, biases))
-
-
-
-
-local output = {
-	inputs[1][1] * weights1[1] +
-	inputs[1][2] * weights1[2] +
-	inputs[1][3] * weights1[3] +
-	inputs[1][4] * weights1[4] + bias1,
-	inputs[1][1] * weights2[1] + inputs[1][2] * weights2[2] + inputs[1][3] * weights2[3] + inputs[1][4] * weights2[4] +
-	bias2,
-	inputs[1][1] * weights3[1] + inputs[1][2] * weights3[2] + inputs[1][3] * weights3[3] + inputs[1][4] * weights3[4] +
-	bias3
-}
-
-for key, value in pairs(output) do
-	print(key, value)
-end
