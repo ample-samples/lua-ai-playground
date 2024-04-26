@@ -295,7 +295,7 @@ function matrix.pow(m1, num)
 	end
 	if num < 0 then
 		local rank; m1, rank = matrix.invert(m1)
-		if not m1 then return m1, rank end   -- singular
+		if not m1 then return m1, rank end -- singular
 		num = -num
 	end
 	local mtx = matrix.copy(m1)
@@ -446,10 +446,10 @@ end
 -- note: in --// ... //-- we have a way that does no divison,
 -- however with big number and matrices we get problems since we do no reducing
 function matrix.dogauss(mtx)
-	local e            = mtx[1][1]
-	local zero         = type(e) == "table" and e.zero or 0
-	local one          = type(e) == "table" and e.one or 1
-	local norm2        = type(e) == "table" and e.norm2 or number_norm2
+	local e             = mtx[1][1]
+	local zero          = type(e) == "table" and e.zero or 0
+	local one           = type(e) == "table" and e.one or 1
+	local norm2         = type(e) == "table" and e.norm2 or number_norm2
 
 	local rows, columns = #mtx, #mtx[1]
 	-- stairs left -> right
@@ -938,8 +938,8 @@ function matrix.column(mtx, cn)
 	else
 		return nil
 	end
-
 end
+
 --//  matrix.size ( mtx )
 -- get matrix size as string rows,columns
 function matrix.size(mtx)
@@ -998,14 +998,13 @@ function matrix.scalar(m1, m2)
 	return m1[1][1] * m2[1][1] + m1[2][1] * m2[2][1] + m1[3][1] * m2[3][1]
 end
 
-
 -- Utility functions for matrix.dot
 local function dotScalar1dVector(scalar, v1)
-	local sum = 0
+	local outputVector = {}
 	for i = 1, #v1 do
-		sum = sum + v1[i] * scalar
+		outputVector[i] = v1[i] * scalar
 	end
-	return sum
+	return outputVector
 end
 
 local function dotScalar2dVector(scalar, v1)
@@ -1020,6 +1019,15 @@ local function dot1dVector1dVector(v1, v2)
 end
 
 local function dot1dVector2dVector(v1, v2)
+	local layerOutput = {};
+	for i = 1, #v2, 1 do
+		local nodeSumWeightXInput = 0
+		for j = 1, #v1, 1 do
+			nodeSumWeightXInput = nodeSumWeightXInput + v2[i][j] * v1[j]
+		end
+		layerOutput[i] = nodeSumWeightXInput
+	end
+	return layerOutput
 end
 
 local function dot2dVector2dVector(v1, v2)
