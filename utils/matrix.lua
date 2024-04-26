@@ -926,6 +926,21 @@ function matrix.columns(mtx)
 	return #mtx[1]
 end
 
+--// matrix.column ( mtx, cn )
+-- return a column of a matrix
+function matrix.column(mtx, cn)
+	if mtx[1] and mtx[1][1] then
+		local column = {}
+		for i = 1, #mtx, 1 do
+			column[i] = mtx[i][cn]
+		end
+		return column
+	else
+		return nil
+	end
+
+end
+
 --//  matrix.size ( mtx )
 -- get matrix size as string rows,columns
 function matrix.size(mtx)
