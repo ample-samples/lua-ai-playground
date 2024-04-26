@@ -1001,13 +1001,27 @@ end
 
 -- Utility functions for matrix.dot
 local function dotScalar1dVector(scalar, v1)
+	local sum = 0
+	for i = 1, #v1 do
+		sum = sum + v1[i] * scalar
+	end
+	return sum
 end
+
 local function dotScalar2dVector(scalar, v1)
 end
+
 local function dot1dVector1dVector(v1, v2)
+	local sum = 0
+	for i = 1, #v1 do
+		sum = sum + v1[i] * v2[i]
+	end
+	return sum
 end
+
 local function dot1dVector2dVector(v1, v2)
 end
+
 local function dot2dVector2dVector(v1, v2)
 end
 
