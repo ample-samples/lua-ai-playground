@@ -940,7 +940,6 @@ function matrix.column(mtx, cn)
 	end
 
 end
-
 --//  matrix.size ( mtx )
 -- get matrix size as string rows,columns
 function matrix.size(mtx)
@@ -999,19 +998,22 @@ function matrix.scalar(m1, m2)
 	return m1[1][1] * m2[1][1] + m1[2][1] * m2[2][1] + m1[3][1] * m2[3][1]
 end
 
+
+-- Utility functions for matrix.dot
+local function dotScalar1dVector(scalar, v1)
+end
+local function dotScalar2dVector(scalar, v1)
+end
+local function dot1dVector1dVector(v1, v2)
+end
+local function dot1dVector2dVector(v1, v2)
+end
+local function dot2dVector2dVector(v1, v2)
+end
+
 --// matrix.dot ( m1, m2 )
 -- returns the dot product of two vectors
 function matrix.dot(v1, v2)
-	if not v1 then
-		-- We're done: nothing to add on
-		return 0
-	end
-	if type(v1[1]) == "table" then
-		local v1FirstEl = table.remove(v1, 1)
-		local v2FirstEl = table.remove(v2, 1)
-	end
-	-- Multiply the first numbers and add to the dot product of the rest
-	return v1FirstEl * v2FirstEl + matrix.dot(v1, v2)
 end
 
 -- function matrix.dot(m1, m2)
