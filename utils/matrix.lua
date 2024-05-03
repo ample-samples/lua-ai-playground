@@ -114,6 +114,14 @@ LICENSE
 --// matrix //
 --////////////
 
+function CleanNils(t)
+  local ans = {}
+  for _,v in pairs(t) do
+    ans[ #ans+1 ] = v
+  end
+  return ans
+end
+
 local matrix = { _TYPE = 'module', _NAME = 'matrix', _VERSION = '0.2.11.20120416' }
 
 -- access to the metatable we set at the end of the file
@@ -134,7 +142,13 @@ function matrix:new(rows, columns, value)
 	if type(rows) == "table" then
 		-- check for vector
 		if type(rows[1]) ~= "table" then -- expect a vector
-			return setmetatable({ { rows[1] }, { rows[2] }, { rows[3] } }, matrix_meta)
+			local returnRows = {}
+			for i = 1, #rows do
+				if rows[i] ~= nil then
+					returnRows[i] = { rows[i] }
+				end
+			end
+			return setmetatable(returnRows, matrix_meta)
 		end
 		return setmetatable(rows, matrix_meta)
 	end
@@ -1001,41 +1015,86 @@ end
 -- Utility functions for matrix.dot
 local function dotScalar1dVector(scalar, v1)
 	local outputVector = {}
-	for i = 1, #v1 do
+	for i = 1, #v1, 1 do
 		outputVector[i] = v1[i] * scalar
 	end
-	return outputVector
+	return matrix(outputVector)
 end
 
 local function dotScalar2dVector(scalar, v1)
+	local outputVector = {}
+	for i = 1, #v1, 1 do
+		outputVector[i] = dotScalar1dVector(scalar, v1[i])
+	end
+	return matrix(outputVector)
 end
 
 local function dot1dVector1dVector(v1, v2)
+	-- print("v1, v2")
+	-- print(matrix(v1))
+	-- print(matrix(v2))
 	local sum = 0
-	for i = 1, #v1 do
+	for i = 1, #v1, 1 do
+		-- if i == 4 then print(v1[4]) end
+		-- print("i")
+		-- print(i)
 		sum = sum + v1[i] * v2[i]
 	end
 	return sum
 end
 
+-- TODO: implement
 local function dot1dVector2dVector(v1, v2)
+	-- print(#v1, #v2)
+	-- print("v1[1], v2[1][2]")
+	-- print(v1[1], v2[1][2])
+	-- print("v1")
+	-- print(matrix(v1))
+	-- print("v2")
+	-- print(matrix(v2))
 	local layerOutput = {};
-	for i = 1, #v2, 1 do
-		local nodeSumWeightXInput = 0
-		for j = 1, #v1, 1 do
-			nodeSumWeightXInput = nodeSumWeightXInput + v2[i][j] * v1[j]
-		end
-		layerOutput[i] = nodeSumWeightXInput
+	for i = 1, #v2[1], 1 do
+		-- local nodeSumWeightXInput = 0
+		-- for j = 1, #v2[i], 1 do
+		-- 	print("v2[" .. i .. "][" .. j .. "]")
+		-- 	print(v2[i][j])
+		-- end
+		-- layerOutput[i] = nodeSumWeightXInput
+		-- print("input")
+		-- 	print(matrix(v1))
+		-- 	print(matrix.transpose(v2))
+		layerOutput[i] = dot1dVector1dVector(v1, v2[i])
 	end
-	return layerOutput
+	return matrix(layerOutput)
 end
 
-local function dot2dVector2dVector(v1, v2)
+-- TODO: implement
+function matrix.dot2dVector2dVector(v1, v2)
+	local layerOutput = {}
+	for i = 1, #v2, 1 do
+		-- print("v1[i]")
+		-- print(v1[i])
+		-- print("v2")
+		-- print(v2)
+		layerOutput[i] = dot1dVector2dVector(v1[i], v2)
+	end
+	return matrix(layerOutput)
 end
 
 --// matrix.dot ( m1, m2 )
 -- returns the dot product of two vectors
 function matrix.dot(v1, v2)
+	if type(v1) == "number" and type(v2) == "table" and type(v2[1]) == "number" then
+		return dotScalar1dVector(v1, v2)
+	elseif type(v1) == "number" and type(v2) == "table" and type(v2[1]) == "table" and type(v2[1][1]) == "number" then
+		return dotScalar2dVector(v1, v2)
+	elseif type(v1) == "table" and type(v1[1]) == "number" and type(v2) == "table" and type(v2[1]) == "number" then
+		return dot1dVector1dVector(v1, v2)
+	elseif type(v1) == "table" and type(v1[1]) == "number" and type(v2) == "table" and type(v2[1]) == "table" and type(v2[1][1]) == "number" then
+		return dot1dVector2dVector(v1, v2)
+	elseif type(v1) == "table" and type(v1[1]) == "table" and type(v1[1][1]) == "number" and type(v2) == "table" and type(v2[1]) == "table" and type(v2[1][1]) == "number" then
+		return matrix.dot2dVector2dVector(v1, v2)
+	end
 end
 
 -- function matrix.dot(m1, m2)
