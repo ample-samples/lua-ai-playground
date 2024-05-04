@@ -115,11 +115,11 @@ LICENSE
 --////////////
 
 function CleanNils(t)
-  local ans = {}
-  for _,v in pairs(t) do
-    ans[ #ans+1 ] = v
-  end
-  return ans
+	local ans = {}
+	for _, v in pairs(t) do
+		ans[#ans + 1] = v
+	end
+	return ans
 end
 
 local matrix = { _TYPE = 'module', _NAME = 'matrix', _VERSION = '0.2.11.20120416' }
@@ -582,7 +582,7 @@ function matrix.sqrt(m1, iters)
 		-- calc square root
 		-- y, z = (1/2)*(y + z^-1), (1/2)*(z + y^-1)
 		y, z = matrix.divnum((matrix.add(y, matrix.invert(z))), 2),
-				matrix.divnum((matrix.add(z, matrix.invert(y))), 2)
+		    matrix.divnum((matrix.add(z, matrix.invert(y))), 2)
 		local dist1 = get_abs_avg(y, lasty)
 		if iters == math.huge then
 			if dist1 >= dist then
@@ -614,9 +614,9 @@ function matrix.root(m1, root, iters)
 		--	((((p-1)*my + mx^-1)/p)*my^-1)^(p-2) *
 		--	((p-1)*my + mx^-1)/p
 		mx, my = mx:mulnum(root - 1):add(my:invert()):divnum(root),
-				my:mulnum(root - 1):add(mx:invert()):divnum(root)
-				:mul(my:invert():pow(root - 2)):mul(my:mulnum(root - 1)
-					:add(mx:invert())):divnum(root)
+		    my:mulnum(root - 1):add(mx:invert()):divnum(root)
+		    :mul(my:invert():pow(root - 2)):mul(my:mulnum(root - 1)
+			    :add(mx:invert())):divnum(root)
 		local dist1 = get_abs_avg(mx, lastx)
 		if iters == math.huge then
 			if dist1 >= dist then
@@ -761,7 +761,7 @@ end
 --// matrix.transpose ( m1 )
 -- Transpose a matrix
 -- switch rows and columns
-function matrix.transpose(m1)
+function matrix.ranspose(m1)
 	local docopy = matrix.type(m1) == "number" and num_copy or t_copy
 	local mtx = {}
 	for i = 1, #m1[1] do
@@ -885,7 +885,7 @@ function matrix.tostring(mtx, formatstr)
 	local mtype = matrix.type(mtx)
 	local e = mtx[1][1]
 	local tostring = mtype == "tensor" and tensor_tostring or
-			type(e) == "table" and e.tostring or number_tostring
+	    type(e) == "table" and e.tostring or number_tostring
 	for i = 1, #mtx do
 		local tstr = {}
 		for j = 1, #mtx[1] do
@@ -1029,72 +1029,134 @@ local function dotScalar2dVector(scalar, v1)
 	return matrix(outputVector)
 end
 
-local function dot1dVector1dVector(v1, v2)
-	-- print("v1, v2")
-	-- print(matrix(v1))
-	-- print(matrix(v2))
+local function dot1dVector1dVector(v1, v2, bias)
+	print("dot1dVector1dVector")
+	print("v1")
+	print(matrix(v1))
+	print("v2")
+	print(matrix(v2))
+	if bias == nil then bias = 0 end
+	if #v1 ~= #v2 then
+		error("Shape error: #m1 ~= #m2, " .. #v1 .. "~=" .. #v2, nil)
+	end
 	local sum = 0
 	for i = 1, #v1, 1 do
-		-- if i == 4 then print(v1[4]) end
-		-- print("i")
-		-- print(i)
-		sum = sum + v1[i] * v2[i]
+		sum = sum + v1[i] * v2[i] + bias
 	end
 	return sum
 end
 
--- TODO: implement
-local function dot1dVector2dVector(v1, v2)
-	-- print(#v1, #v2)
-	-- print("v1[1], v2[1][2]")
-	-- print(v1[1], v2[1][2])
-	-- print("v1")
-	-- print(matrix(v1))
-	-- print("v2")
-	-- print(matrix(v2))
-	local layerOutput = {};
-	for i = 1, #v2[1], 1 do
-		-- local nodeSumWeightXInput = 0
-		-- for j = 1, #v2[i], 1 do
-		-- 	print("v2[" .. i .. "][" .. j .. "]")
-		-- 	print(v2[i][j])
-		-- end
-		-- layerOutput[i] = nodeSumWeightXInput
-		-- print("input")
-		-- 	print(matrix(v1))
-		-- 	print(matrix.transpose(v2))
-		layerOutput[i] = dot1dVector1dVector(v1, v2[i])
+local function dot2dVector1dVector(v1, v2, biases)
+	print("dot2dVector1dVector")
+	print("v1")
+	print(matrix(v1))
+	print("v2")
+	print(matrix(v2))
+	biases = biases or {}
+	if #v1[1] ~= #v2 then
+		error("Shape error: m1 columns ~= m2 rows, " .. #v1 .. "~=" .. #v2[1], nil)
 	end
-	return matrix(layerOutput)
+	local layerOutput = {};
+	for i = 1, #v1, 1 do
+		layerOutput[i] = dot1dVector1dVector(v1[i], v2, biases[i])
+	end
+	return layerOutput
 end
 
--- TODO: implement
-function matrix.dot2dVector2dVector(v1, v2)
-	local layerOutput = {}
-	for i = 1, #v2, 1 do
-		-- print("v1[i]")
-		-- print(v1[i])
-		-- print("v2")
-		-- print(v2)
-		layerOutput[i] = dot1dVector2dVector(v1[i], v2)
+local function dot1dVector2dVector(v1, v2, biases)
+	biases = biases or {}
+	if #v1 ~= #v2[1] then
+		error("Shape error: m1 columns ~= m2 rows, " .. #v1 .. "~=" .. #v2[1], nil)
 	end
-	return matrix(layerOutput)
+	local layerOutput = {};
+	for i = 1, #v2, 1 do
+		layerOutput[i] = dot1dVector1dVector(v1, v2[i], biases[i])
+	end
+	return layerOutput
+end
+
+local function dot2dVector2dVector(v1, v2, biases)
+	if #v1[1] ~= #v2 then
+		error("Shape error: m1 columns ~= m2 rows, " .. #v1[1] .. "~=" .. #v2, nil)
+	end
+	local result = {}
+	for i = 1, #v1, 1 do
+		for j = 1, #v2[1], 1 do
+			local v1Rowi = v1[i]
+			local v2Colj = matrix.transpose(v2)[j]
+			if type(result[i]) == "nil" then result[i] = {} end
+			result[i][j] = dot1dVector1dVector(v1Rowi, v2Colj, biases)
+		end
+	end
+	return result
+end
+
+function matrix.transpose(v1)
+	local transposedBoard = {}
+	for i = 1, #v1[1], 1 do
+		local newRow = {}
+		for j = 1, #v1, 1 do
+			newRow[#newRow+1] = v1[j][i]
+		end
+		transposedBoard[#transposedBoard+1] = newRow
+	end
+	return transposedBoard
 end
 
 --// matrix.dot ( m1, m2 )
 -- returns the dot product of two vectors
-function matrix.dot(v1, v2)
+function matrix.dot(v1, v2, biases)
+	print("v1")
+	print(matrix(v1))
+	print("v2")
+	print(matrix(v2))
 	if type(v1) == "number" and type(v2) == "table" and type(v2[1]) == "number" then
+		print("detect dotScalar1dVector")
 		return dotScalar1dVector(v1, v2)
 	elseif type(v1) == "number" and type(v2) == "table" and type(v2[1]) == "table" and type(v2[1][1]) == "number" then
+		print("detect dotScalar2dVector")
 		return dotScalar2dVector(v1, v2)
 	elseif type(v1) == "table" and type(v1[1]) == "number" and type(v2) == "table" and type(v2[1]) == "number" then
-		return dot1dVector1dVector(v1, v2)
+		print("detect dot1dVector1dVector")
+		return dot1dVector1dVector(v1, v2, biases)
 	elseif type(v1) == "table" and type(v1[1]) == "number" and type(v2) == "table" and type(v2[1]) == "table" and type(v2[1][1]) == "number" then
-		return dot1dVector2dVector(v1, v2)
+		print("detect dot1dVector2dVector")
+		return dot1dVector2dVector(v1, v2, biases)
+	elseif type(v1) == "table" and type(v1[1]) == "table" and type(v1[1][1]) == "number" and type(v2) == "table" and type(v2[1]) == "number" then
+		print("detect calculateLayerOutput")
+		return matrix.calculateLayerOutput(v1, v2, biases)
 	elseif type(v1) == "table" and type(v1[1]) == "table" and type(v1[1][1]) == "number" and type(v2) == "table" and type(v2[1]) == "table" and type(v2[1][1]) == "number" then
-		return matrix.dot2dVector2dVector(v1, v2)
+		print("detect batchCalculateLayerOutput")
+		return matrix.batchCalculateLayerOutput(v1, v2, biases)
 	end
+	error("Not valid matrix inputs")
+end
+
+-- TODO: fix this
+function matrix.calculateLayerOutput( layerWeights, layerInputs, layerBiases)
+	local layerOutput = {};
+	layerBiases = layerBiases or {}
+	for i = 1, #layerBiases do
+		local nodeSumWeightXInput = 0
+
+		for j = 1, #layerInputs, 1 do
+			nodeSumWeightXInput = nodeSumWeightXInput + layerWeights[i][j] * layerInputs[j]
+		end
+		layerOutput[i] = (layerBiases[i] or 0) + nodeSumWeightXInput
+	end
+
+	return matrix(layerOutput)
+end
+
+function matrix.batchCalculateLayerOutput( layerWeights, batchInputs, layerBiases)
+	local batchOutput = {}
+	layerBiases = layerBiases or {}
+
+	for i = 1, #batchInputs, 1 do
+		batchOutput[i] = matrix.calculateLayerOutput(batchInputs[i], layerWeights, layerBiases)
+	end
+
+	return matrix(batchOutput)
 end
 
 -- function matrix.dot(m1, m2)
